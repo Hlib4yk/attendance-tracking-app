@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/**
+ * Form controls часто зі світлим фоном (bg-white у Tailwind). У dark mode body дає світлий
+ * color — успадкований текст у полях стає невидимим. Фіксуємо колір введення окремо.
+ */
+input,
+textarea,
+select {
+  color: #0f172a; /* slate-900 */
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  color: #64748b; /* slate-500 — read-only/disabled залишаються приглушені */
+}
+
+/*
+ * Tailwind Preflight makes ::placeholder very faint; on white inputs it's hard to read.
+ * Force readable placeholder contrast (accessibility).
+ */
+input::placeholder,
+textarea::placeholder {
+  color: #64748b; /* slate-500 */
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  input::placeholder,
+  textarea::placeholder {
+    color: #94a3b8; /* slate-400 on dark surfaces */
+  }
+}

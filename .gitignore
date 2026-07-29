@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# env files / secrets
+.env
+.env.*
+!.env.example
+
+# build output
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# uploads (user-generated, not source)
+uploads/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# logs
+*.log
+
+# leftover from microservice rollback — not part of the repo
+/_analytics-service.removed/
+
+# other students' project folders — not part of this project
+/OI_44/

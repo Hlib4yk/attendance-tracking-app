@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(STUDENT)
+  student   Student?
+  teacher   Teacher?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacherInvitesCreated TeacherInvite[] @relation("TeacherInvitesCreated")
+  teacherInviteRedeemed TeacherInvite?  @relation("TeacherInviteRedeemed")
+}
+
+model TeacherInvite {
+  id               String    @id @default(uuid())
+  /** Secret token from invite URL (one-time) */
+  token            String    @unique
+  /** Normalized email the invitee must use at registration */
+  invitedEmail     String
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime?
+  usedAt           DateTime?
+  usedByUserId     String?  @unique
+  usedByUser       User?    @relation("TeacherInviteRedeemed", fields: [usedByUserId], references: [id])
+  createdByAdminId String
+  createdByAdmin   User      @relation("TeacherInvitesCreated", fields: [createdByAdminId], references: [id])
+}
+
+model Student {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id])
+  groupId         String
+  group           Group        @relation(fields: [groupId], references: [id])
+  faceEmbedding   String? // For future ML face encoding
+  profilePhotoUrl String?
+  attendance      Attendance[]
+}
+
+model Teacher {
+  id       String    @id @default(uuid())
+  userId   String    @unique
+  user     User      @relation(fields: [userId], references: [id])
+  subjects Subject[]
+}
+
+model Group {
+  id       String    @id @default(uuid())
+  name     String
+  students Student[]
+  subjects Subject[]
+  sessions Session[]
+}
+
+model Subject {
+  id        String       @id @default(uuid())
+  name      String
+  teacherId String
+  teacher   Teacher      @relation(fields: [teacherId], references: [id])
+  groups    Group[]
+  sessions  Session[]
+}
+
+model Session {
+  id          String       @id @default(uuid())
+  subjectId   String
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  /** Група, для якої знято відвідуваність (предмет може мати кілька груп) */
+  groupId     String?
+  group       Group?       @relation(fields: [groupId], references: [id])
+  date        DateTime     @default(now())
+  photoUrl    String?
+  confirmed   Boolean      @default(false)
+  attendances Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  status    Status   @default(PRESENT)
+  method    Method   @default(AUTO)
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, studentId])
+}
+
+model LpnuScheduleCache {
+  id        String   @id @default(cuid())
+  cacheKey  String   @unique
+  source    String
+  payload   Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Status {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum Method {
+  AUTO
+  MANUAL
+}

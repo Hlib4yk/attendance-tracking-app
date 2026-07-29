@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: diploma-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: diploma
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: diploma
+    volumes:
+      - diploma_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U diploma -d diploma']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  face-service:
+    build: ./face-service
+    container_name: diploma-face
+    restart: unless-stopped
+    ports:
+      - '8787:8787'
+
+  backend:
+    build: ./backend
+    container_name: diploma-backend
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://diploma:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/diploma
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      FACE_SERVICE_URL: http://face-service:8787
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: diploma-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - face-service
+
+volumes:
+  diploma_pg_data:
+  backend_uploads:
