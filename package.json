@@ -1,12 +1,9 @@
 {
-  "name": "diploma-web-monorepo",
+  "name": "attendance-tracking-app",
   "private": true,
   "scripts": {
     "dev:backend": "npm run start:dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:mobile": "npm run start --prefix mobile"
-  },
-  "dependencies": {
-    "pptxgenjs": "^4.0.1"
   }
 }

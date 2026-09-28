@@ -16,6 +16,9 @@ out/
 # uploads (user-generated, not source)
 uploads/
 
+# output of scripts/seed_oi44_students.py (contains real names)
+scripts/*_seed_result.json
+
 # python
 __pycache__/
 *.pyc
